@@ -1,0 +1,10 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+console_error_panic_hook.workspace = true
+leptos.workspace = true
+serde.workspace = true
+serde_json.workspace = true
