@@ -18,6 +18,8 @@ codegen-units = 1
 
 [workspace.metadata.leptos]
 lib-profile-release = "wasm-release"
+[workspace.metadata.leptos_meta]
+lib-profile-release = "wasm-release"
 
 [workspace.dependencies]
 console_error_panic_hook = "0.1.7"
