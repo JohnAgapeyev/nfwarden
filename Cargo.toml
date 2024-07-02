@@ -3,6 +3,7 @@ members = [
     "frontend",
     "backend",
     "nftables-sys",
+    "nftables",
 ]
 resolver = "2"
 

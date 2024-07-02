@@ -9,7 +9,6 @@ links = "nftables"
 build = "build.rs"
 
 [dependencies]
-libc = "0.2.155"
 
 [build-dependencies]
 bindgen.workspace = true
