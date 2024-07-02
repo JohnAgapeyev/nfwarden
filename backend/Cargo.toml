@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 axum.workspace = true
-leptos.workspace = true
 rusqlite.workspace = true
 rustls.workspace = true
 serde.workspace = true
