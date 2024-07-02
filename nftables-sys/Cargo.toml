@@ -1,0 +1,16 @@
+[package]
+name = "nftables-sys"
+version = "0.1.0"
+edition = "2021"
+# There's already an "nftables-sys" crate published, but it's 6yo, has 1 release, and not github link
+# If I really want to be the maintainer/publisher of this crate, it'll likely need some renaming
+publish = false
+links = "nftables"
+build = "build.rs"
+
+[dependencies]
+libc = "0.2.155"
+
+[build-dependencies]
+bindgen.workspace = true
+pkg-config.workspace = true

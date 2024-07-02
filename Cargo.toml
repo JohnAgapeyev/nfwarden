@@ -2,6 +2,7 @@
 members = [
     "frontend",
     "backend",
+    "nftables-sys",
 ]
 resolver = "2"
 
@@ -39,3 +40,4 @@ zstd = { version = "0.13.1", features = ["zstdmt"] }
 bindgen = "0.69.4"
 tower = { version = "0.4.13", features = ["full"] }
 tower-http = { version = "0.5.2", features = ["full"] }
+pkg-config = "0.3.30"
