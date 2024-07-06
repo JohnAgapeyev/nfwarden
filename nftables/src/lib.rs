@@ -29,6 +29,7 @@ impl NftCtx {
     }
     pub fn set_json(&mut self) {
         unsafe { nft_ctx_input_set_flags(self.inner.as_ptr(), NFT_CTX_INPUT_JSON) };
+        unsafe { nft_ctx_output_set_flags(self.inner.as_ptr(), NFT_CTX_OUTPUT_JSON) };
     }
 
     pub fn run_cmd_bytes(&mut self, cmd: &CStr) -> Result<(), Error> {
