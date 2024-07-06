@@ -17,10 +17,20 @@ pub struct NftCtx {
 
 impl NftCtx {
     pub fn new() -> Self {
-        Self {
-            inner: NonNull::new(unsafe { nft_ctx_new(NFT_CTX_DEFAULT) })
-                .expect("Could not allocate nft_ctx"),
-        }
+        let inner = unsafe {
+            let ctx =
+                NonNull::new(nft_ctx_new(NFT_CTX_DEFAULT)).expect("Could not allocate nft_ctx");
+            if nft_ctx_buffer_output(ctx.as_ptr()) != 0 {
+                nft_ctx_free(ctx.as_ptr());
+                panic!("Creating the output buffer failed!");
+            }
+            if nft_ctx_buffer_error(ctx.as_ptr()) != 0 {
+                nft_ctx_free(ctx.as_ptr());
+                panic!("Creating the error buffer failed!");
+            }
+            ctx
+        };
+        Self { inner }
     }
 
     pub fn is_dry_run(&self) -> bool {
@@ -34,15 +44,22 @@ impl NftCtx {
         unsafe { nft_ctx_output_set_flags(self.inner.as_ptr(), NFT_CTX_OUTPUT_JSON) };
     }
 
-    pub fn run_cmd_bytes(&mut self, cmd: &CStr) -> Result<(), Error> {
+    pub fn run_cmd_bytes(&mut self, cmd: &CStr) -> Result<String, String> {
         let ret = unsafe { nft_run_cmd_from_buffer(self.inner.as_ptr(), cmd.as_ptr()) };
         if ret == 0 {
-            return Ok(());
+            let output = unsafe { CStr::from_ptr(nft_ctx_get_output_buffer(self.inner.as_ptr())) }
+                .to_str()
+                .expect("Library output is not valid UTF-8")
+                .to_string();
+            return Ok(output);
         }
-        //TODO: Convert library error into a proper return value
-        unimplemented!();
+        let error = unsafe { CStr::from_ptr(nft_ctx_get_error_buffer(self.inner.as_ptr())) }
+            .to_str()
+            .expect("Library error is not valid UTF-8")
+            .to_string();
+        return Err(error);
     }
-    pub fn run_cmd_str(&mut self, cmd: &str) -> Result<(), Error> {
+    pub fn run_cmd_str(&mut self, cmd: &str) -> Result<String, String> {
         let converted = CString::new(cmd).unwrap();
         self.run_cmd_bytes(&converted)
     }
@@ -101,10 +118,14 @@ mod tests {
         let mut ctx = NftCtx::new();
         ctx.set_json();
         ctx.set_dry_run(true);
-        ctx.run_cmd_str(
+        let res = ctx.run_cmd_str(
             "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
-        )
-        .unwrap();
+        );
+
+        match res {
+            Ok(s) => println!("MY LIBRARY OUTPUT: {s}"),
+            Err(s) => println!("MY LIBRARY ERROR: {s}"),
+        }
 
         let parsed = serde_json::from_slice::<NftOutput>("{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"libvirt_network\", \"handle\": 1}}]}".as_bytes()).unwrap();
         println!("{parsed:#?}");
