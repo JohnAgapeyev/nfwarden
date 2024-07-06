@@ -1,6 +1,8 @@
 use std::ffi::{CStr, CString};
 use std::ptr::NonNull;
 
+use serde::{Deserialize, Serialize};
+
 use nftables_sys::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -52,6 +54,34 @@ impl Drop for NftCtx {
     }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct NftMeta {
+    pub version: String,
+    pub release_name: String,
+    pub json_schema_version: u64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct NftTableList {
+    pub family: String,
+    pub name: String,
+    pub handle: u64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NftObjects {
+    #[serde(rename = "metainfo")]
+    Meta(NftMeta),
+    Table(NftTableList),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct NftOutput {
+    #[serde(rename = "nftables")]
+    pub items: Vec<NftObjects>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,5 +105,24 @@ mod tests {
             "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
         )
         .unwrap();
+
+        let parsed = serde_json::from_slice::<NftOutput>("{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"libvirt_network\", \"handle\": 1}}]}".as_bytes()).unwrap();
+        println!("{parsed:#?}");
+
+        let output = NftOutput {
+            items: vec![
+                NftObjects::Meta(NftMeta {
+                    version: "1.0.9".to_string(),
+                    release_name: "Old Doc Yak #3".to_string(),
+                    json_schema_version: 1,
+                }),
+                NftObjects::Table(NftTableList {
+                    family: "ip".to_string(),
+                    name: "libvirt_network".to_string(),
+                    handle: 1,
+                }),
+            ],
+        };
+        println!("{}", serde_json::to_string(&output).unwrap());
     }
 }
