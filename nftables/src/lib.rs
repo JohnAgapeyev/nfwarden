@@ -127,23 +127,30 @@ mod tests {
             Err(s) => println!("MY LIBRARY ERROR: {s}"),
         }
 
-        let parsed = serde_json::from_slice::<NftOutput>("{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"libvirt_network\", \"handle\": 1}}]}".as_bytes()).unwrap();
-        println!("{parsed:#?}");
+        if let Ok(raw) = ctx.run_cmd_str(
+            "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
+        ) {
+            let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
+            println!("JSON Parsed:\n{parsed:#?}");
+        }
 
-        let output = NftOutput {
-            items: vec![
-                NftObjects::Meta(NftMeta {
-                    version: "1.0.9".to_string(),
-                    release_name: "Old Doc Yak #3".to_string(),
-                    json_schema_version: 1,
-                }),
-                NftObjects::Table(NftTableList {
-                    family: "ip".to_string(),
-                    name: "libvirt_network".to_string(),
-                    handle: 1,
-                }),
-            ],
-        };
-        println!("{}", serde_json::to_string(&output).unwrap());
+        //let parsed = serde_json::from_slice::<NftOutput>("{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"libvirt_network\", \"handle\": 1}}]}".as_bytes()).unwrap();
+        //println!("{parsed:#?}");
+
+        //let output = NftOutput {
+        //    items: vec![
+        //        NftObjects::Meta(NftMeta {
+        //            version: "1.0.9".to_string(),
+        //            release_name: "Old Doc Yak #3".to_string(),
+        //            json_schema_version: 1,
+        //        }),
+        //        NftObjects::Table(NftTableList {
+        //            family: "ip".to_string(),
+        //            name: "libvirt_network".to_string(),
+        //            handle: 1,
+        //        }),
+        //    ],
+        //};
+        //println!("{}", serde_json::to_string(&output).unwrap());
     }
 }
