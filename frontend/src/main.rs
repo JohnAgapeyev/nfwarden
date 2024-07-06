@@ -26,13 +26,18 @@ fn App() -> impl IntoView {
         <Meta charset="utf-8"/>
         <Meta name="description" content="Hidden internal description"/>
         <MyCustomHeader />
-        <button
-            on:click=move |_| {
-                set_count.update(|n| *n += 1);
-            }
-        >
-            "Click me: " {move || count.get()}
-        </button>
+        <main>
+            <aside>
+                <p>"This is my text"</p>
+            </aside>
+            <button
+                on:click=move |_| {
+                    set_count.update(|n| *n += 1);
+                }
+            >
+                "Click me: " {move || count.get()}
+            </button>
+        </main>
     }
 }
 
