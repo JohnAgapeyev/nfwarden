@@ -3,7 +3,15 @@ name = "nftables"
 version = "0.1.0"
 edition = "2021"
 
+#[[test]]
+#name = "tests"
+#required-features = ["libnftables"]
+
+[features]
+default = []
+libnftables = ["dep:nftables-sys"]
+
 [dependencies]
-nftables-sys = {path = "../nftables-sys" }
+nftables-sys = {path = "../nftables-sys", optional = true }
 serde.workspace = true
 serde_json.workspace = true

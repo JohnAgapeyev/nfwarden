@@ -3,6 +3,7 @@ use std::ptr::NonNull;
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "libnftables")]
 use nftables_sys::*;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -10,11 +11,13 @@ pub enum Error {
     Something,
 }
 
+#[cfg(feature = "libnftables")]
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct NftCtx {
     inner: NonNull<nft_ctx>,
 }
 
+#[cfg(feature = "libnftables")]
 impl NftCtx {
     pub fn new() -> Self {
         let inner = unsafe {
@@ -65,6 +68,7 @@ impl NftCtx {
     }
 }
 
+#[cfg(feature = "libnftables")]
 impl Drop for NftCtx {
     fn drop(&mut self) {
         unsafe { nft_ctx_free(self.inner.as_ptr()) };

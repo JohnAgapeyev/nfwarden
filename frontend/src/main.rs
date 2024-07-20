@@ -1,5 +1,21 @@
+use gloo::net::http::Request;
 use leptos::*;
+//use leptos::error::Result;
 use leptos_meta::*;
+
+use nftables::NftOutput;
+
+async fn fetch_tables(_value: i32) -> String {
+    let resp = Request::get("/api/v1/get_tables").send().await.unwrap();
+    assert_eq!(resp.status(), 200);
+
+    resp.text().await.unwrap()
+
+    //match resp.json::<Result<NftOutput, String>>().await {
+    //    Ok(parsed) => "MYTEST".to_string(),
+    //    Err(err_msg) => err_msg.to_string(),
+    //}
+}
 
 #[component]
 fn MyCustomHeader() -> impl IntoView {
@@ -15,6 +31,8 @@ fn MyCustomHeader() -> impl IntoView {
 #[component]
 fn App() -> impl IntoView {
     let (count, set_count) = create_signal(0);
+
+    let once = create_local_resource(move || count.get(), fetch_tables);
 
     view! {
         <Html
@@ -33,10 +51,12 @@ fn App() -> impl IntoView {
             <button
                 on:click=move |_| {
                     set_count.update(|n| *n += 1);
+                    once.refetch();
                 }
             >
                 "Click me: " {move || count.get()}
             </button>
+            <p>"TESTING: " {move || once.get()}</p>
         </main>
     }
 }

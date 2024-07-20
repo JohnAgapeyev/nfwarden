@@ -20,14 +20,14 @@ async fn get_tables() -> Result<Json<NftOutput>, Json<String>> {
         })],
     };
 
-    println!("{}", serde_json::to_string(&input).unwrap());
+    //println!("{}", serde_json::to_string(&input).unwrap());
 
     //Json(ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()))
 
     match ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()) {
         Ok(raw) => {
             let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
-            println!("Serialized Input JSON Parsed:\n{parsed:#?}");
+            //println!("Serialized Input JSON Parsed:\n{parsed:#?}");
             return Ok(Json(parsed));
         }
         Err(err_msg) => {

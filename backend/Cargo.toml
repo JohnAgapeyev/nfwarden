@@ -3,8 +3,11 @@ name = "backend"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies.nftables]
+workspace = true
+features = ["libnftables"]
+
 [dependencies]
-nftables.workspace = true
 axum.workspace = true
 rusqlite.workspace = true
 rustls.workspace = true
