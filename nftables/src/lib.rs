@@ -80,9 +80,11 @@ pub struct NftMeta {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct NftTableList {
-    pub family: String,
-    pub name: String,
-    pub handle: u64,
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<u64>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -119,7 +121,8 @@ mod tests {
         ctx.set_json();
         ctx.set_dry_run(true);
         let res = ctx.run_cmd_str(
-            "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
+            //"{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
+            "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": null } } } ] }",
         );
 
         match res {
@@ -127,12 +130,29 @@ mod tests {
             Err(s) => println!("MY LIBRARY ERROR: {s}"),
         }
 
-        if let Ok(raw) = ctx.run_cmd_str(
-            "{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": \"ip\" } } } ] }",
-        ) {
+        if let Ok(raw) = ctx
+            .run_cmd_str("{ \"nftables\": [ { \"list\": { \"tables\": { \"family\": null } } } ] }")
+        {
             let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
             println!("JSON Parsed:\n{parsed:#?}");
         }
+
+        //let input = NftOutput {
+        //    items: vec![NftObjects::Table(NftTableList {
+        //        family: None,
+        //        name: None,
+        //        handle: None,
+        //    })],
+        //};
+        //let test = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap());
+
+        //dbg!(test);
+
+        ////println!("{}", serde_json::to_string(&output).unwrap());
+        //if let Ok(raw) = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()) {
+        //    let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
+        //    println!("FANCY JSON Parsed:\n{parsed:#?}");
+        //}
 
         //let parsed = serde_json::from_slice::<NftOutput>("{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"libvirt_network\", \"handle\": 1}}]}".as_bytes()).unwrap();
         //println!("{parsed:#?}");
