@@ -170,10 +170,167 @@ pub struct FlowtableElement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CounterElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub packets: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<i64>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct QuotaElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub used: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inv: Option<bool>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CtHelperProto {
+    Tcp,
+    Udp,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CtHelperElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type")]
+    pub cttype: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol: Option<CtHelperProto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub l3proto: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LimitUnit {
+    Packets,
+    Bytes,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct LimitElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub burst: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unit: Option<LimitUnit>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inv: Option<bool>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct MetaInfoElement {
     pub version: String,
     pub release_name: String,
     pub json_schema_version: i64,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CtTimeoutProto {
+    Tcp,
+    Udp,
+    Dccp,
+    Sctp,
+    Gre,
+    Icmpv6,
+    Icmp,
+    Generic,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CtTimeoutElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol: Option<CtTimeoutProto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub state: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub l3proto: Option<String>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CtExpectationProto {
+    Tcp,
+    Udp,
+    Dccp,
+    Sctp,
+    Gre,
+    Icmpv6,
+    Icmp,
+    Generic,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CtExpectationElement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub table: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub handle: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub l3proto: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protocol: Option<CtExpectationProto>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dport: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<i64>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -185,13 +342,13 @@ pub enum ListObject {
     Map(Map),
     Element(Element),
     Flowtable(FlowtableElement),
-    Counter,
-    Quota,
-    ConnectionTrackHelper,
-    Limit,
+    Counter(CounterElement),
+    Quota(QuotaElement),
+    ConnectionTrackHelper(CtHelperElement),
+    Limit(LimitElement),
     MetaInfo(MetaInfoElement),
-    ConnectionTrackTimeout,
-    ConnectionTrackExpectation,
+    ConnectionTrackTimeout(CtTimeoutElement),
+    ConnectionTrackExpectation(CtExpectationElement),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
