@@ -57,14 +57,6 @@ pub struct AnonymousCounter {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct NamedCounter {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub packets: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bytes: Option<i64>,
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum CounterStatement {
     #[serde(rename = "counter")]
     Anonymous(AnonymousCounter),
@@ -73,13 +65,67 @@ pub enum CounterStatement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct MangleStatement {
+    //TODO: Do we need to limit things to "exthdr, payload, meta, ct, or ct helper" expression?
+    pub key: Expression,
+    pub value: Expression,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct AnonymousQuota {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub val: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub val_unit: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub used: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub used_unit: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inv: Option<bool>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum QuotaStatement {
+    #[serde(rename = "quota")]
+    Anonymous(AnonymousQuota),
+    #[serde(rename = "quota")]
+    Named(String),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct AnonymousLimit {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate_unit: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub burst: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub burst_unit: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inv: Option<bool>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum LimitStatement {
+    #[serde(rename = "limit")]
+    Anonymous(AnonymousLimit),
+    #[serde(rename = "limit")]
+    Named(String),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Statement {
     Verdict(VerdictStatement),
     Match(MatchStatement),
     Counter(CounterStatement),
-    Mangle,
-    Quota,
-    Limit,
+    Mangle(MangleStatement),
+    Quota(QuotaStatement),
+    Limit(LimitStatement),
     Fwd,
     Notrack,
     Dup,
@@ -150,5 +196,40 @@ mod tests {
     fn named_counter_statement_serialization() {
         let v = serde_json::to_string(&CounterStatement::Named("mycounter".to_string())).unwrap();
         assert_eq!(v, "{\"counter\":\"mycounter\"}");
+    }
+    #[test]
+    fn anonymous_quota_statement_serialization() {
+        let v = serde_json::to_string(&QuotaStatement::Anonymous(AnonymousQuota {
+            val: Some(1),
+            val_unit: Some("kbytes".to_string()),
+            used: Some(0),
+            used_unit: Some("kbytes".to_string()),
+            inv: Some(false),
+        }))
+        .unwrap();
+        assert_eq!(v, "{\"quota\":{\"val\":1,\"val_unit\":\"kbytes\",\"used\":0,\"used_unit\":\"kbytes\",\"inv\":false}}");
+    }
+    #[test]
+    fn named_quota_statement_serialization() {
+        let v = serde_json::to_string(&QuotaStatement::Named("myquota".to_string())).unwrap();
+        assert_eq!(v, "{\"quota\":\"myquota\"}");
+    }
+    #[test]
+    fn anonymous_limit_statement_serialization() {
+        let v = serde_json::to_string(&LimitStatement::Anonymous(AnonymousLimit {
+            rate: Some(1),
+            rate_unit: Some("kbytes".to_string()),
+            per: Some("minutes".to_string()),
+            burst: Some(0),
+            burst_unit: Some("kbytes".to_string()),
+            inv: Some(false),
+        }))
+        .unwrap();
+        assert_eq!(v, "{\"limit\":{\"rate\":1,\"rate_unit\":\"kbytes\",\"per\":\"minutes\",\"burst\":0,\"burst_unit\":\"kbytes\",\"inv\":false}}");
+    }
+    #[test]
+    fn named_limit_statement_serialization() {
+        let v = serde_json::to_string(&LimitStatement::Named("mylimit".to_string())).unwrap();
+        assert_eq!(v, "{\"limit\":\"mylimit\"}");
     }
 }
