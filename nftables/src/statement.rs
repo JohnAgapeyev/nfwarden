@@ -118,6 +118,29 @@ pub enum LimitStatement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum FwdFamily {
+    Ip,
+    Ip6,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct FwdStatement {
+    pub dev: Expression,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<FwdFamily>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub addr: Option<String>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct DupStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub addr: Option<Expression>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dev: Option<Expression>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Statement {
     Verdict(VerdictStatement),
@@ -126,9 +149,9 @@ pub enum Statement {
     Mangle(MangleStatement),
     Quota(QuotaStatement),
     Limit(LimitStatement),
-    Fwd,
-    Notrack,
-    Dup,
+    Fwd(FwdStatement),
+    Notrack(Option<bool>),
+    Dup(DupStatement),
     Nat,
     Reject,
     Set,
