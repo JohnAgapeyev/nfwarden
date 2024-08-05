@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::expression::Expression;
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct JumpVerdict {
     pub target: String,
@@ -22,10 +24,59 @@ pub enum VerdictStatement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum MatchOp {
+    #[serde(rename = "==")]
+    Equal,
+    #[serde(rename = "!=")]
+    NotEqual,
+    #[serde(rename = "<")]
+    LessThan,
+    #[serde(rename = ">")]
+    GreaterThan,
+    #[serde(rename = "<=")]
+    LessThanEqual,
+    #[serde(rename = ">=")]
+    GreaterThanEqual,
+    #[serde(rename = "in")]
+    In,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct MatchStatement {
+    pub left: Expression,
+    pub right: Expression,
+    pub op: MatchOp,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct AnonymousCounter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub packets: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<i64>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct NamedCounter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub packets: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bytes: Option<i64>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum CounterStatement {
+    #[serde(rename = "counter")]
+    Anonymous(AnonymousCounter),
+    #[serde(rename = "counter")]
+    Named(String),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Statement {
     Verdict(VerdictStatement),
-    Match,
-    Counter,
+    Match(MatchStatement),
+    Counter(CounterStatement),
     Mangle,
     Quota,
     Limit,
@@ -85,5 +136,19 @@ mod tests {
         }))
         .unwrap();
         assert_eq!(v, "{\"goto\":{\"target\":\"goto_target\"}}");
+    }
+    #[test]
+    fn anonymous_counter_statement_serialization() {
+        let v = serde_json::to_string(&CounterStatement::Anonymous(AnonymousCounter {
+            packets: Some(2),
+            bytes: Some(3),
+        }))
+        .unwrap();
+        assert_eq!(v, "{\"counter\":{\"packets\":2,\"bytes\":3}}");
+    }
+    #[test]
+    fn named_counter_statement_serialization() {
+        let v = serde_json::to_string(&CounterStatement::Named("mycounter".to_string())).unwrap();
+        assert_eq!(v, "{\"counter\":\"mycounter\"}");
     }
 }
