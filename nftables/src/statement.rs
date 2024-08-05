@@ -23,7 +23,7 @@ pub enum VerdictStatement {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Statement {
-    Verdict,
+    Verdict(VerdictStatement),
     Match,
     Counter,
     Mangle,
