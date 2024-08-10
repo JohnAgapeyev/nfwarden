@@ -236,6 +236,109 @@ pub struct SetStatement {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+pub enum LogLevel {
+    Emerg,
+    Alert,
+    Crit,
+    Err,
+    Warn,
+    Notice,
+    Info,
+    Debug,
+    Audit,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum LogFlag {
+    #[serde(rename = "tcp sequence")]
+    TcpSequence,
+    #[serde(rename = "tcp options")]
+    TcpOptions,
+    #[serde(rename = "ip options")]
+    IpOptions,
+    Skuid,
+    Ether,
+    All,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct LogStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub snaplen: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "queue-threshold")]
+    pub queue_threshold: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub level: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flags: Option<Vec<LogFlag>>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct MeterStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key: Option<Expression>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stmt: Option<Box<Statement>>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum QueueFlag {
+    Bypass,
+    Fanout,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct QueueStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub num: Option<Expression>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub flags: Option<Vec<QueueFlag>>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct VerdictMapStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key: Option<Expression>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data: Option<Expression>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CtCountStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub val: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inv: Option<bool>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum XtTypeName {
+    Match,
+    Target,
+    Watcher,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct XtStatement {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type")]
+    pub typename: Option<XtTypeName>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Statement {
     Verdict(VerdictStatement),
     Match(MatchStatement),
@@ -249,15 +352,20 @@ pub enum Statement {
     Nat(NatStatement),
     Reject(RejectStatement),
     Set(SetStatement),
-    Log,
-    CtHelper,
-    Meter,
-    Queue,
-    VerdictMap,
-    CtCount,
-    CtTimeout,
-    CtExpectation,
-    Xt,
+    Log(LogStatement),
+    #[serde(rename = "ct helper")]
+    CtHelper(Expression),
+    Meter(MeterStatement),
+    Queue(QueueStatement),
+    #[serde(rename = "vmap")]
+    VerdictMap(VerdictMapStatement),
+    #[serde(rename = "ct count")]
+    CtCount(CtCountStatement),
+    #[serde(rename = "ct timeout")]
+    CtTimeout(Expression),
+    #[serde(rename = "ct expectation")]
+    CtExpectation(Expression),
+    Xt(XtStatement),
 }
 
 #[cfg(test)]
