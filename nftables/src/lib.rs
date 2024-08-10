@@ -126,7 +126,7 @@ mod tests {
         ctx.set_dry_run(true);
 
         let input = Command {
-            cmd: vec![CmdType::List(ListObject::Chain(ChainElement {
+            objects: vec![CommandObject::List(Object::Chain(ChainElement {
                 family: Some("ip".to_string()),
                 table: Some("filter".to_string()),
                 name: Some("DOCKER-ISOLATION-STAGE-1".to_string()),
@@ -138,9 +138,6 @@ mod tests {
                 dev: None,
                 policy: None,
             }))],
-            name: None,
-            handle: None,
-            flags: None,
         };
 
         println!("Input {}", serde_json::to_string(&input).unwrap());
@@ -151,9 +148,9 @@ mod tests {
         }
         //TODO: The top level "nftables" with meta object deserialization isn't working yet...
         //
-        //if let Ok(raw) = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()) {
-        //    let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
-        //    println!("Serialized Input JSON Parsed:\n{parsed:#?}");
-        //}
+        if let Ok(raw) = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()) {
+            let parsed = serde_json::from_slice::<CommandResponse>(raw.as_bytes()).unwrap();
+            println!("Serialized Input JSON Parsed:\n{parsed:#?}");
+        }
     }
 }

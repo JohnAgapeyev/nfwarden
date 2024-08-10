@@ -335,7 +335,7 @@ pub struct CtExpectationElement {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum ListObject {
+pub enum Object {
     Table(TableElement),
     Chain(ChainElement),
     Rule(RuleElement),
@@ -354,29 +354,30 @@ pub enum ListObject {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum CmdType {
-    Add,
-    Replace,
-    Create,
-    Insert,
-    Delete,
-    List(ListObject),
-    Reset,
-    Flush,
-    Rename,
+pub enum CommandObject {
+    Add(Object),
+    Replace(Object),
+    Create(Object),
+    Insert(Object),
+    Delete(Object),
+    List(Object),
+    Reset(Object),
+    Flush(Object),
+    Rename(Object),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Command {
     //TODO: This works but is super ugly, is there a better way?
     #[serde(rename = "nftables")]
-    pub cmd: Vec<CmdType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub handle: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub flags: Option<Vec<TableFlag>>,
+    pub objects: Vec<CommandObject>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CommandResponse {
+    //TODO: This works but is super ugly, is there a better way?
+    #[serde(rename = "nftables")]
+    pub objects: Vec<Object>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
