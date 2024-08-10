@@ -334,6 +334,7 @@ pub struct CtExpectationElement {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ListObject {
     Table(TableElement),
     Chain(ChainElement),
@@ -351,7 +352,7 @@ pub enum ListObject {
     ConnectionTrackExpectation(CtExpectationElement),
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CmdType {
     Add,
@@ -359,7 +360,7 @@ pub enum CmdType {
     Create,
     Insert,
     Delete,
-    List,
+    List(ListObject),
     Reset,
     Flush,
     Rename,
@@ -367,7 +368,9 @@ pub enum CmdType {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Command {
-    pub cmd: CmdType,
+    //TODO: This works but is super ugly, is there a better way?
+    #[serde(rename = "nftables")]
+    pub cmd: Vec<CmdType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

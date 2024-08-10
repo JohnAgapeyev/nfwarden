@@ -12,7 +12,6 @@ pub use statement::*;
 pub mod expression;
 pub use expression::*;
 
-
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct NftTableListOutput {
     pub family: Option<String>,
@@ -118,5 +117,43 @@ mod tests {
         //    ],
         //};
         //println!("{}", serde_json::to_string(&output).unwrap());
+    }
+
+    #[test]
+    fn complex_chain_response_parsing() {
+        let mut ctx = NftCtx::new();
+        ctx.set_json();
+        ctx.set_dry_run(true);
+
+        let input = Command {
+            cmd: vec![CmdType::List(ListObject::Chain(ChainElement {
+                family: Some("ip".to_string()),
+                table: Some("filter".to_string()),
+                name: Some("DOCKER-ISOLATION-STAGE-1".to_string()),
+                newname: None,
+                handle: None,
+                chaintype: None,
+                hook: None,
+                prio: None,
+                dev: None,
+                policy: None,
+            }))],
+            name: None,
+            handle: None,
+            flags: None,
+        };
+
+        println!("Input {}", serde_json::to_string(&input).unwrap());
+        let res = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap());
+        match res {
+            Ok(s) => println!("MY LIBRARY OUTPUT: {s}"),
+            Err(s) => println!("MY LIBRARY ERROR: {s}"),
+        }
+        //TODO: The top level "nftables" with meta object deserialization isn't working yet...
+        //
+        //if let Ok(raw) = ctx.run_cmd_str(&serde_json::to_string(&input).unwrap()) {
+        //    let parsed = serde_json::from_slice::<NftOutput>(raw.as_bytes()).unwrap();
+        //    println!("Serialized Input JSON Parsed:\n{parsed:#?}");
+        //}
     }
 }
