@@ -58,9 +58,9 @@ pub struct AnonymousCounter {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum CounterStatement {
-    #[serde(rename = "counter")]
+    #[serde(untagged)]
     Anonymous(AnonymousCounter),
-    #[serde(rename = "counter")]
+    #[serde(untagged)]
     Named(String),
 }
 
@@ -340,7 +340,6 @@ pub struct XtStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Statement {
-    Verdict(VerdictStatement),
     Match(MatchStatement),
     Counter(CounterStatement),
     Mangle(MangleStatement),
@@ -366,6 +365,8 @@ pub enum Statement {
     #[serde(rename = "ct expectation")]
     CtExpectation(Expression),
     Xt(XtStatement),
+    #[serde(untagged)]
+    Verdict(VerdictStatement),
 }
 
 #[cfg(test)]
