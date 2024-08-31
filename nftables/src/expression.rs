@@ -58,7 +58,7 @@ pub enum Expression {
     Set(Vec<Box<Expression>>),
     Map(MapExpression),
     Prefix(PrefixExpression),
-    Range,
+    Range([Box<Expression>; 2]),
     Payload,
     ExtHdr,
     #[serde(rename = "tcp option")]
@@ -86,4 +86,77 @@ pub enum Expression {
     Number(i64),
     #[serde(untagged)]
     Boolean(bool),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod concat {
+        use super::*;
+
+        #[test]
+        fn concat_serialization() {
+            let v = serde_json::to_string(&Expression::Concat(vec![
+                Box::new(Expression::String("a".to_string())),
+                Box::new(Expression::String("b".to_string())),
+                Box::new(Expression::String("c".to_string())),
+            ]))
+            .unwrap();
+            assert_eq!(v, "{\"concat\":[\"a\",\"b\",\"c\"]}");
+        }
+    }
+    mod set {
+        use super::*;
+
+        #[test]
+        fn set_serialization() {
+            let v = serde_json::to_string(&Expression::Set(vec![
+                Box::new(Expression::String("a".to_string())),
+                Box::new(Expression::String("b".to_string())),
+                Box::new(Expression::String("c".to_string())),
+            ]))
+            .unwrap();
+            assert_eq!(v, "{\"set\":[\"a\",\"b\",\"c\"]}");
+        }
+    }
+    mod map {
+        use super::*;
+
+        #[test]
+        fn map_serialization() {
+            let v = serde_json::to_string(&Expression::Map(MapExpression {
+                key: Box::new(Expression::String("a".to_string())),
+                data: Box::new(Expression::String("b".to_string())),
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"map\":{\"key\":\"a\",\"data\":\"b\"}}");
+        }
+    }
+    mod prefix {
+        use super::*;
+
+        #[test]
+        fn addr_prefix_serialization() {
+            let v = serde_json::to_string(&Expression::Prefix(PrefixExpression {
+                addr: Box::new(Expression::String("127.0.0.1".to_string())),
+                len: 3,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"prefix\":{\"addr\":\"127.0.0.1\",\"len\":3}}");
+        }
+    }
+    mod range {
+        use super::*;
+
+        #[test]
+        fn range_serialization() {
+            let v = serde_json::to_string(&Expression::Range([
+                Box::new(Expression::Number(2)),
+                Box::new(Expression::Number(4)),
+            ]))
+            .unwrap();
+            assert_eq!(v, "{\"range\":[2,4]}");
+        }
+    }
 }
