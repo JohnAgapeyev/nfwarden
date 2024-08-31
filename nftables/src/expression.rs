@@ -13,6 +13,37 @@ pub struct PrefixExpression {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum PayloadBase {
+    #[serde(rename = "ll")]
+    LinkLayer,
+    #[serde(rename = "nh")]
+    NetworkLayer,
+    #[serde(rename = "th")]
+    TransportLayer,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct RawPayload {
+    pub base: PayloadBase,
+    pub offset: i64,
+    pub len: i64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct ReferencePayload {
+    pub protocol: String,
+    pub field: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum PayloadExpression {
+    #[serde(untagged)]
+    Raw(RawPayload),
+    #[serde(untagged)]
+    Reference(ReferencePayload),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MetaKey {
     Length,
@@ -59,7 +90,7 @@ pub enum Expression {
     Map(MapExpression),
     Prefix(PrefixExpression),
     Range([Box<Expression>; 2]),
-    Payload,
+    Payload(PayloadExpression),
     ExtHdr,
     #[serde(rename = "tcp option")]
     TcpOption,
@@ -157,6 +188,35 @@ mod tests {
             ]))
             .unwrap();
             assert_eq!(v, "{\"range\":[2,4]}");
+        }
+    }
+    mod payload {
+        use super::*;
+
+        #[test]
+        fn raw_payload_serialization() {
+            let v =
+                serde_json::to_string(&Expression::Payload(PayloadExpression::Raw(RawPayload {
+                    base: PayloadBase::LinkLayer,
+                    offset: 13,
+                    len: 27,
+                })))
+                .unwrap();
+            assert_eq!(
+                v,
+                "{\"payload\":{\"base\":\"ll\",\"offset\":13,\"len\":27}}"
+            );
+        }
+        #[test]
+        fn reference_payload_serialization() {
+            let v = serde_json::to_string(&Expression::Payload(PayloadExpression::Reference(
+                ReferencePayload {
+                    protocol: "tcp".to_string(),
+                    field: "port".to_string(),
+                },
+            )))
+            .unwrap();
+            assert_eq!(v, "{\"payload\":{\"protocol\":\"tcp\",\"field\":\"port\"}}");
         }
     }
 }
