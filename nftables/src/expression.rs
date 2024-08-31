@@ -44,6 +44,31 @@ pub enum PayloadExpression {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct ExtHdrExpression {
+    pub name: String,
+    pub field: String,
+    pub offset: i64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct TcpOptionExpression {
+    pub name: String,
+    pub field: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SctpChunkExpression {
+    pub name: String,
+    pub field: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct DccpOptionExpression {
+    #[serde(rename = "type")]
+    pub option_type: i64,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MetaKey {
     Length,
@@ -91,13 +116,13 @@ pub enum Expression {
     Prefix(PrefixExpression),
     Range([Box<Expression>; 2]),
     Payload(PayloadExpression),
-    ExtHdr,
+    ExtHdr(ExtHdrExpression),
     #[serde(rename = "tcp option")]
-    TcpOption,
+    TcpOption(TcpOptionExpression),
     #[serde(rename = "sctp chunk")]
-    SctpChunk,
+    SctpChunk(SctpChunkExpression),
     #[serde(rename = "dccp option")]
-    DccpOption,
+    DccpOption(DccpOptionExpression),
     Meta(MetaExpression),
     Rt,
     Ct,
@@ -217,6 +242,61 @@ mod tests {
             )))
             .unwrap();
             assert_eq!(v, "{\"payload\":{\"protocol\":\"tcp\",\"field\":\"port\"}}");
+        }
+    }
+    mod exthdr {
+        use super::*;
+
+        #[test]
+        fn exthdr_serialization() {
+            let v = serde_json::to_string(&Expression::ExtHdr(ExtHdrExpression {
+                name: "a".to_string(),
+                field: "b".to_string(),
+                offset: 3,
+            }))
+            .unwrap();
+            assert_eq!(
+                v,
+                "{\"exthdr\":{\"name\":\"a\",\"field\":\"b\",\"offset\":3}}"
+            );
+        }
+    }
+    mod tcp_option {
+        use super::*;
+
+        #[test]
+        fn tcp_option_serialization() {
+            let v = serde_json::to_string(&Expression::TcpOption(TcpOptionExpression {
+                name: "a".to_string(),
+                field: "b".to_string(),
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"tcp option\":{\"name\":\"a\",\"field\":\"b\"}}");
+        }
+    }
+    mod sctp_chunk {
+        use super::*;
+
+        #[test]
+        fn sctp_chunk_serialization() {
+            let v = serde_json::to_string(&Expression::SctpChunk(SctpChunkExpression {
+                name: "a".to_string(),
+                field: "b".to_string(),
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"sctp chunk\":{\"name\":\"a\",\"field\":\"b\"}}");
+        }
+    }
+    mod dccp_option {
+        use super::*;
+
+        #[test]
+        fn dccp_option_serialization() {
+            let v = serde_json::to_string(&Expression::DccpOption(DccpOptionExpression {
+                option_type: 1,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"dccp option\":{\"type\":1}}");
         }
     }
 }
