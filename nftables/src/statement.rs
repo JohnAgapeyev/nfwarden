@@ -58,9 +58,9 @@ pub struct AnonymousCounter {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum CounterStatement {
-    #[serde(untagged)]
+    #[serde(rename = "counter")]
     Anonymous(AnonymousCounter),
-    #[serde(untagged)]
+    #[serde(rename = "counter")]
     Named(String),
 }
 
