@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::expression::Expression;
-use crate::statement::Statement;
+use crate::expression::*;
+use crate::statement::*;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -57,7 +57,7 @@ pub struct RuleElement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chain: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expr: Option<Vec<Statement>>,
+    pub expr: Option<Vec<Box<Statement>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub handle: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -99,7 +99,7 @@ pub struct Set {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<SetFlag>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub elem: Option<Vec<Expression>>,
+    pub elem: Option<Vec<Box<Expression>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -132,7 +132,7 @@ pub struct Map {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<SetFlag>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub elem: Option<Vec<Expression>>,
+    pub elem: Option<Vec<Box<Expression>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -154,7 +154,7 @@ pub struct Element {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub elem: Option<Vec<Expression>>,
+    pub elem: Option<Vec<Box<Expression>>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -166,7 +166,7 @@ pub struct FlowtableElement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub elem: Option<Vec<Expression>>,
+    pub elem: Option<Vec<Box<Expression>>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -427,8 +427,39 @@ pub struct NftOutput {
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn unit_test() {
-        return;
+    use super::*;
+    mod rule {
+        use super::*;
+
+        #[test]
+        fn rule_serialize_deserialize() {
+            let raw="{\"rule\":{\"family\":\"ip\",\"table\":\"libvirt_network\",\"chain\":\"forward\",\"handle\":7,\"expr\":[{\"counter\":{\"packets\":0,\"bytes\":0}},{\"jump\":{\"target\":\"guest_cross\"}}]}}".to_string();
+
+            let v = Object::Rule(RuleElement {
+                family: Some("ip".to_string()),
+                table: Some("libvirt_network".to_string()),
+                chain: Some("forward".to_string()),
+                expr: Some(vec![
+                    Box::new(Statement::Counter(CounterStatement::Anonymous(
+                        AnonymousCounter {
+                            packets: Some(0),
+                            bytes: Some(0),
+                        },
+                    ))),
+                    Box::new(Statement::Verdict(VerdictStatement::Jump(
+                        JumpVerdictStatement {
+                            target: "guest_cross".to_string(),
+                        },
+                    ))),
+                ]),
+                handle: Some(7),
+                index: None,
+                comment: None,
+            });
+
+            let parsed = serde_json::from_slice::<Object>(raw.as_bytes()).unwrap();
+
+            assert_eq!(v, parsed);
+        }
     }
 }
