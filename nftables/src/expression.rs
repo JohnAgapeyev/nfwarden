@@ -246,7 +246,44 @@ pub enum VerdictExpression {
     Goto(GotoVerdictExpression),
 }
 
-//TODO: Continue implementing
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct ElemExpression {
+    pub val: Box<Expression>,
+    pub timeout: i64,
+    pub expires: i64,
+    pub comment: String,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SocketKey {
+    Transparent,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SocketExpression {
+    pub key: SocketKey,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum OsfKey {
+    Name,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum OsfTtl {
+    Loose,
+    Skip,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct OsfExpression {
+    pub key: OsfKey,
+    pub ttl: OsfTtl,
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Expression {
@@ -271,9 +308,9 @@ pub enum Expression {
     JHash(JHashExpression),
     SymHash(SymHashExpression),
     Fib(FibExpression),
-    Elem,
-    Socket,
-    Osf,
+    Elem(ElemExpression),
+    Socket(SocketExpression),
+    Osf(OsfExpression),
     #[serde(untagged)]
     BinOp(BinOpExpression),
     #[serde(untagged)]
@@ -567,6 +604,48 @@ mod tests {
             let v = serde_json::to_string(&Expression::Verdict(VerdictExpression::Accept(None)))
                 .unwrap();
             assert_eq!(v, "{\"accept\":null}");
+        }
+    }
+    mod elem {
+        use super::*;
+
+        #[test]
+        fn elem_serialization() {
+            let v = serde_json::to_string(&Expression::Elem(ElemExpression {
+                val: Box::new(Expression::Meta(MetaExpression {
+                    key: MetaKey::Protocol,
+                })),
+                timeout: 100,
+                expires: 300,
+                comment: "a".to_string(),
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"elem\":{\"val\":{\"meta\":{\"key\":\"protocol\"}},\"timeout\":100,\"expires\":300,\"comment\":\"a\"}}");
+        }
+    }
+    mod socket {
+        use super::*;
+
+        #[test]
+        fn socket_serialization() {
+            let v = serde_json::to_string(&Expression::Socket(SocketExpression {
+                key: SocketKey::Transparent,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"socket\":{\"key\":\"transparent\"}}");
+        }
+    }
+    mod osf {
+        use super::*;
+
+        #[test]
+        fn osf_serialization() {
+            let v = serde_json::to_string(&Expression::Osf(OsfExpression {
+                key: OsfKey::Name,
+                ttl: OsfTtl::Loose,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"osf\":{\"key\":\"name\",\"ttl\":\"loose\"}}");
         }
     }
 }
