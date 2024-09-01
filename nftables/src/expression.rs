@@ -211,6 +211,20 @@ pub struct FibExpression {
     pub flags: Vec<FibFlag>,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum BinOpExpression {
+    #[serde(rename = "|")]
+    Or(Vec<Box<Expression>>),
+    #[serde(rename = "^")]
+    Xor(Vec<Box<Expression>>),
+    #[serde(rename = "&")]
+    And(Vec<Box<Expression>>),
+    #[serde(rename = "<<")]
+    Shl(Vec<Box<Expression>>),
+    #[serde(rename = ">>")]
+    Shr(Vec<Box<Expression>>),
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -236,12 +250,12 @@ pub enum Expression {
     JHash(JHashExpression),
     SymHash(SymHashExpression),
     Fib(FibExpression),
-    //TODO: Implement "Binary Operation" Expression
-    BinOp,
     Verdict,
     Elem,
     Socket,
     Osf,
+    #[serde(untagged)]
+    BinOp(BinOpExpression),
     #[serde(untagged)]
     String(String),
     #[serde(untagged)]
@@ -501,6 +515,26 @@ mod tests {
             }))
             .unwrap();
             assert_eq!(v, "{\"fib\":{\"result\":\"oif\",\"flags\":[\"saddr\"]}}");
+        }
+    }
+    mod binop {
+        use super::*;
+
+        #[test]
+        fn binop_serialization() {
+            let v = serde_json::to_string(&Expression::BinOp(BinOpExpression::Xor(vec![
+                Box::new(Expression::Meta(MetaExpression {
+                    key: MetaKey::Length,
+                })),
+                Box::new(Expression::Meta(MetaExpression {
+                    key: MetaKey::Protocol,
+                })),
+            ])))
+            .unwrap();
+            assert_eq!(
+                v,
+                "{\"^\":[{\"meta\":{\"key\":\"length\"}},{\"meta\":{\"key\":\"protocol\"}}]}"
+            );
         }
     }
 }
