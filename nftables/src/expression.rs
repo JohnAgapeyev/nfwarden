@@ -455,5 +455,14 @@ mod tests {
                 "{\"jhash\":{\"mod\":7,\"offset\":2,\"expr\":{\"meta\":{\"key\":\"length\"}},\"seed\":13}}"
             );
         }
+        #[test]
+        fn symhash_serialization() {
+            let v = serde_json::to_string(&Expression::SymHash(SymHashExpression {
+                modulus: 7,
+                offset: Some(2),
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"symhash\":{\"mod\":7,\"offset\":2}}");
+        }
     }
 }
