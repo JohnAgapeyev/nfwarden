@@ -186,6 +186,31 @@ pub struct SymHashExpression {
     pub offset: Option<i64>,
 }
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FibResult {
+    Oif,
+    OifName,
+    #[serde(rename = "type")]
+    FibType,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum FibFlag {
+    Saddr,
+    Daddr,
+    Mark,
+    Iif,
+    Oif,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct FibExpression {
+    pub result: FibResult,
+    pub flags: Vec<FibFlag>,
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -210,7 +235,7 @@ pub enum Expression {
     NumGen(NumGenExpression),
     JHash(JHashExpression),
     SymHash(SymHashExpression),
-    Fib,
+    Fib(FibExpression),
     //TODO: Implement "Binary Operation" Expression
     BinOp,
     Verdict,
@@ -463,6 +488,19 @@ mod tests {
             }))
             .unwrap();
             assert_eq!(v, "{\"symhash\":{\"mod\":7,\"offset\":2}}");
+        }
+    }
+    mod fib {
+        use super::*;
+
+        #[test]
+        fn fib_serialization() {
+            let v = serde_json::to_string(&Expression::Fib(FibExpression {
+                result: FibResult::Oif,
+                flags: vec![FibFlag::Saddr],
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"fib\":{\"result\":\"oif\",\"flags\":[\"saddr\"]}}");
         }
     }
 }
