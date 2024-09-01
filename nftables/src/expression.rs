@@ -225,6 +225,27 @@ pub enum BinOpExpression {
     Shr(Vec<Box<Expression>>),
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct JumpVerdictExpression {
+    pub target: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct GotoVerdictExpression {
+    pub target: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum VerdictExpression {
+    Accept(Option<bool>),
+    Drop(Option<bool>),
+    Continue(Option<bool>),
+    Return(Option<bool>),
+    Jump(JumpVerdictExpression),
+    Goto(GotoVerdictExpression),
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -250,12 +271,13 @@ pub enum Expression {
     JHash(JHashExpression),
     SymHash(SymHashExpression),
     Fib(FibExpression),
-    Verdict,
     Elem,
     Socket,
     Osf,
     #[serde(untagged)]
     BinOp(BinOpExpression),
+    #[serde(untagged)]
+    Verdict(VerdictExpression),
     #[serde(untagged)]
     String(String),
     #[serde(untagged)]
@@ -535,6 +557,16 @@ mod tests {
                 v,
                 "{\"^\":[{\"meta\":{\"key\":\"length\"}},{\"meta\":{\"key\":\"protocol\"}}]}"
             );
+        }
+    }
+    mod verdict {
+        use super::*;
+
+        #[test]
+        fn verdict_serialization() {
+            let v = serde_json::to_string(&Expression::Verdict(VerdictExpression::Accept(None)))
+                .unwrap();
+            assert_eq!(v, "{\"accept\":null}");
         }
     }
 }

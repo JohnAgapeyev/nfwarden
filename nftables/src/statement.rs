@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 use crate::expression::Expression;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct JumpVerdict {
+pub struct JumpVerdictStatement {
     pub target: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct GotoVerdict {
+pub struct GotoVerdictStatement {
     pub target: String,
 }
 
@@ -19,8 +19,8 @@ pub enum VerdictStatement {
     Drop(Option<bool>),
     Continue(Option<bool>),
     Return(Option<bool>),
-    Jump(JumpVerdict),
-    Goto(GotoVerdict),
+    Jump(JumpVerdictStatement),
+    Goto(GotoVerdictStatement),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -398,7 +398,7 @@ mod tests {
         }
         #[test]
         fn jump_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Jump(JumpVerdict {
+            let v = serde_json::to_string(&VerdictStatement::Jump(JumpVerdictStatement {
                 target: "jump_target".to_string(),
             }))
             .unwrap();
@@ -406,7 +406,7 @@ mod tests {
         }
         #[test]
         fn goto_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Goto(GotoVerdict {
+            let v = serde_json::to_string(&VerdictStatement::Goto(GotoVerdictStatement {
                 target: "goto_target".to_string(),
             }))
             .unwrap();
