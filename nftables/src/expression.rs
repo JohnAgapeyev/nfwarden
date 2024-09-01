@@ -167,6 +167,25 @@ pub struct NumGenExpression {
     pub offset: Option<i64>,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct JHashExpression {
+    #[serde(rename = "mod")]
+    pub modulus: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<i64>,
+    pub expr: Box<Expression>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub seed: Option<i64>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SymHashExpression {
+    #[serde(rename = "mod")]
+    pub modulus: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<i64>,
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -189,8 +208,8 @@ pub enum Expression {
     Rt(RtExpression),
     Ct(CtExpression),
     NumGen(NumGenExpression),
-    JHash,
-    SymHash,
+    JHash(JHashExpression),
+    SymHash(SymHashExpression),
     Fib,
     //TODO: Implement "Binary Operation" Expression
     BinOp,
@@ -415,6 +434,26 @@ mod tests {
             }))
             .unwrap();
             assert_eq!(v, "{\"numgen\":{\"mode\":\"inc\",\"mod\":7}}");
+        }
+    }
+    mod hash {
+        use super::*;
+
+        #[test]
+        fn jhash_serialization() {
+            let v = serde_json::to_string(&Expression::JHash(JHashExpression {
+                modulus: 7,
+                offset: Some(2),
+                expr: Box::new(Expression::Meta(MetaExpression {
+                    key: MetaKey::Length,
+                })),
+                seed: Some(13),
+            }))
+            .unwrap();
+            assert_eq!(
+                v,
+                "{\"jhash\":{\"mod\":7,\"offset\":2,\"expr\":{\"meta\":{\"key\":\"length\"}},\"seed\":13}}"
+            );
         }
     }
 }
