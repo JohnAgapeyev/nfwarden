@@ -150,6 +150,23 @@ pub struct CtExpression {
     pub dir: Option<CtDir>,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NumGenMode {
+    #[serde(rename = "inc")]
+    Increment,
+    Random,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct NumGenExpression {
+    pub mode: NumGenMode,
+    #[serde(rename = "mod")]
+    pub modulus: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<i64>,
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -171,7 +188,7 @@ pub enum Expression {
     Meta(MetaExpression),
     Rt(RtExpression),
     Ct(CtExpression),
-    NumGen,
+    NumGen(NumGenExpression),
     JHash,
     SymHash,
     Fib,
@@ -384,6 +401,20 @@ mod tests {
                 v,
                 "{\"ct\":{\"key\":\"test\",\"family\":\"ip\",\"dir\":\"original\"}}"
             );
+        }
+    }
+    mod numgen {
+        use super::*;
+
+        #[test]
+        fn numgen_serialization() {
+            let v = serde_json::to_string(&Expression::NumGen(NumGenExpression {
+                mode: NumGenMode::Increment,
+                modulus: 7,
+                offset: None,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"numgen\":{\"mode\":\"inc\",\"mod\":7}}");
         }
     }
 }
