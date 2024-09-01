@@ -105,6 +105,51 @@ pub struct MetaExpression {
     pub key: MetaKey,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum RtKey {
+    ClassId,
+    NextHop,
+    Mtu,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum RtFamily {
+    #[serde(rename = "ip")]
+    IPv4,
+    #[serde(rename = "ip6")]
+    IPv6,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct RtExpression {
+    pub key: RtKey,
+    pub family: RtFamily,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum CtFamily {
+    #[serde(rename = "ip")]
+    IPv4,
+    #[serde(rename = "ip6")]
+    IPv6,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum CtDir {
+    Original,
+    Reply,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct CtExpression {
+    pub key: String,
+    pub family: CtFamily,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dir: Option<CtDir>,
+}
+
 //TODO: Continue implementing
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -124,8 +169,8 @@ pub enum Expression {
     #[serde(rename = "dccp option")]
     DccpOption(DccpOptionExpression),
     Meta(MetaExpression),
-    Rt,
-    Ct,
+    Rt(RtExpression),
+    Ct(CtExpression),
     NumGen,
     JHash,
     SymHash,
@@ -297,6 +342,48 @@ mod tests {
             }))
             .unwrap();
             assert_eq!(v, "{\"dccp option\":{\"type\":1}}");
+        }
+    }
+    mod meta {
+        use super::*;
+
+        #[test]
+        fn meta_serialization() {
+            let v = serde_json::to_string(&Expression::Meta(MetaExpression {
+                key: MetaKey::Length,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"meta\":{\"key\":\"length\"}}");
+        }
+    }
+    mod rt {
+        use super::*;
+
+        #[test]
+        fn rt_serialization() {
+            let v = serde_json::to_string(&Expression::Rt(RtExpression {
+                key: RtKey::Mtu,
+                family: RtFamily::IPv4,
+            }))
+            .unwrap();
+            assert_eq!(v, "{\"rt\":{\"key\":\"mtu\",\"family\":\"ip\"}}");
+        }
+    }
+    mod ct {
+        use super::*;
+
+        #[test]
+        fn ct_serialization() {
+            let v = serde_json::to_string(&Expression::Ct(CtExpression {
+                key: "test".to_string(),
+                family: CtFamily::IPv4,
+                dir: Some(CtDir::Original),
+            }))
+            .unwrap();
+            assert_eq!(
+                v,
+                "{\"ct\":{\"key\":\"test\",\"family\":\"ip\",\"dir\":\"original\"}}"
+            );
         }
     }
 }
