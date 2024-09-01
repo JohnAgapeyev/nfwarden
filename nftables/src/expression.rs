@@ -12,7 +12,7 @@ pub struct PrefixExpression {
     pub len: i64,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum PayloadBase {
     #[serde(rename = "ll")]
     LinkLayer,
@@ -22,7 +22,7 @@ pub enum PayloadBase {
     TransportLayer,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct RawPayload {
     pub base: PayloadBase,
     pub offset: i64,
@@ -62,13 +62,13 @@ pub struct SctpChunkExpression {
     pub field: String,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DccpOptionExpression {
     #[serde(rename = "type")]
     pub option_type: i64,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MetaKey {
     Length,
@@ -100,12 +100,12 @@ pub enum MetaKey {
     SecPath,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct MetaExpression {
     pub key: MetaKey,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum RtKey {
     ClassId,
@@ -113,7 +113,7 @@ pub enum RtKey {
     Mtu,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum RtFamily {
     #[serde(rename = "ip")]
     IPv4,
@@ -121,13 +121,13 @@ pub enum RtFamily {
     IPv6,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct RtExpression {
     pub key: RtKey,
     pub family: RtFamily,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum CtFamily {
     #[serde(rename = "ip")]
     IPv4,
@@ -135,7 +135,7 @@ pub enum CtFamily {
     IPv6,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum CtDir {
     Original,
@@ -150,7 +150,7 @@ pub struct CtExpression {
     pub dir: Option<CtDir>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum NumGenMode {
     #[serde(rename = "inc")]
@@ -158,7 +158,7 @@ pub enum NumGenMode {
     Random,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct NumGenExpression {
     pub mode: NumGenMode,
     #[serde(rename = "mod")]
