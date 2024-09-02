@@ -377,39 +377,93 @@ mod tests {
 
         #[test]
         fn accept_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Accept(None)).unwrap();
+            let v =
+                serde_json::to_string(&Statement::Verdict(VerdictStatement::Accept(None))).unwrap();
             assert_eq!(v, "{\"accept\":null}");
         }
         #[test]
+        fn accept_verdict_deserialization() {
+            let raw = "{\"accept\":null}";
+            let target = Statement::Verdict(VerdictStatement::Accept(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
         fn drop_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Drop(None)).unwrap();
+            let v =
+                serde_json::to_string(&Statement::Verdict(VerdictStatement::Drop(None))).unwrap();
             assert_eq!(v, "{\"drop\":null}");
         }
         #[test]
+        fn drop_verdict_deserialization() {
+            let raw = "{\"drop\":null}";
+            let target = Statement::Verdict(VerdictStatement::Drop(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
         fn continue_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Continue(None)).unwrap();
+            let v = serde_json::to_string(&Statement::Verdict(VerdictStatement::Continue(None)))
+                .unwrap();
             assert_eq!(v, "{\"continue\":null}");
         }
         #[test]
+        fn continue_verdict_deserialization() {
+            let raw = "{\"continue\":null}";
+            let target = Statement::Verdict(VerdictStatement::Continue(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
         fn return_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Return(None)).unwrap();
+            let v =
+                serde_json::to_string(&Statement::Verdict(VerdictStatement::Return(None))).unwrap();
             assert_eq!(v, "{\"return\":null}");
         }
         #[test]
+        fn return_verdict_deserialization() {
+            let raw = "{\"return\":null}";
+            let target = Statement::Verdict(VerdictStatement::Return(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
         fn jump_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Jump(JumpVerdictStatement {
-                target: "jump_target".to_string(),
-            }))
+            let v = serde_json::to_string(&Statement::Verdict(VerdictStatement::Jump(
+                JumpVerdictStatement {
+                    target: "jump_target".to_string(),
+                },
+            )))
             .unwrap();
             assert_eq!(v, "{\"jump\":{\"target\":\"jump_target\"}}");
         }
         #[test]
+        fn jump_verdict_deserialization() {
+            let raw = "{\"jump\":{\"target\":\"jump_target\"}}";
+            let target = Statement::Verdict(VerdictStatement::Jump(JumpVerdictStatement {
+                target: "jump_target".to_string(),
+            }));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
         fn goto_verdict_serialization() {
-            let v = serde_json::to_string(&VerdictStatement::Goto(GotoVerdictStatement {
-                target: "goto_target".to_string(),
-            }))
+            let v = serde_json::to_string(&Statement::Verdict(VerdictStatement::Goto(
+                GotoVerdictStatement {
+                    target: "goto_target".to_string(),
+                },
+            )))
             .unwrap();
             assert_eq!(v, "{\"goto\":{\"target\":\"goto_target\"}}");
+        }
+        #[test]
+        fn goto_verdict_deserialization() {
+            let raw = "{\"goto\":{\"target\":\"goto_target\"}}";
+            let target = Statement::Verdict(VerdictStatement::Goto(GotoVerdictStatement {
+                target: "goto_target".to_string(),
+            }));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
         }
     }
     mod counter {
