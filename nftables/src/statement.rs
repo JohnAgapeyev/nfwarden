@@ -57,10 +57,9 @@ pub struct AnonymousCounter {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum CounterStatement {
-    #[serde(rename = "counter")]
     Anonymous(AnonymousCounter),
-    #[serde(rename = "counter")]
     Named(String),
 }
 
@@ -214,7 +213,7 @@ pub struct RejectStatement {
     #[serde(rename = "type")]
     pub rejecttype: Option<RejectType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expr: Option<Expression>,
+    pub expr: Option<Box<Expression>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -418,18 +417,39 @@ mod tests {
 
         #[test]
         fn anonymous_counter_statement_serialization() {
-            let v = serde_json::to_string(&CounterStatement::Anonymous(AnonymousCounter {
-                packets: Some(2),
-                bytes: Some(3),
-            }))
+            let v = serde_json::to_string(&Statement::Counter(CounterStatement::Anonymous(
+                AnonymousCounter {
+                    packets: Some(2),
+                    bytes: Some(3),
+                },
+            )))
             .unwrap();
             assert_eq!(v, "{\"counter\":{\"packets\":2,\"bytes\":3}}");
         }
         #[test]
+        fn anonymous_counter_statement_deserialization() {
+            let target = Statement::Counter(CounterStatement::Anonymous(AnonymousCounter {
+                packets: Some(2),
+                bytes: Some(3),
+            }));
+            let raw = "{\"counter\":{\"packets\":2,\"bytes\":3}}";
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(parsed, target);
+        }
+        #[test]
         fn named_counter_statement_serialization() {
-            let v =
-                serde_json::to_string(&CounterStatement::Named("mycounter".to_string())).unwrap();
+            let v = serde_json::to_string(&Statement::Counter(CounterStatement::Named(
+                "mycounter".to_string(),
+            )))
+            .unwrap();
             assert_eq!(v, "{\"counter\":\"mycounter\"}");
+        }
+        #[test]
+        fn named_counter_statement_deserialization() {
+            let target = Statement::Counter(CounterStatement::Named("mycounter".to_string()));
+            let raw = "{\"counter\":\"mycounter\"}";
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(parsed, target);
         }
     }
     mod quota {
