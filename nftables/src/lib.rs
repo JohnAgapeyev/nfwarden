@@ -132,4 +132,18 @@ mod tests {
         let parsed = serde_json::from_slice::<CommandResponse>(raw.as_bytes()).unwrap();
         println!("Serialized Input JSON Parsed:\n{parsed:#?}");
     }
+
+    #[test]
+    fn docker_nat_table_parsing() {
+        let mut ctx = NftCtx::new();
+        ctx.set_json();
+        ctx.set_dry_run(true);
+
+        let raw: String = "
+        {\"nftables\": [{\"metainfo\": {\"version\": \"1.1.0\", \"release_name\": \"Commodore Bullmoose\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"ip\", \"name\": \"nat\", \"handle\": 3}}, {\"chain\": {\"family\": \"ip\", \"table\": \"nat\", \"name\": \"DOCKER\", \"handle\": 1}}, {\"chain\": {\"family\": \"ip\", \"table\": \"nat\", \"name\": \"POSTROUTING\", \"handle\": 2, \"type\": \"nat\", \"hook\": \"postrouting\", \"prio\": 100, \"policy\": \"accept\"}}, {\"chain\": {\"family\": \"ip\", \"table\": \"nat\", \"name\": \"PREROUTING\", \"handle\": 5, \"type\": \"nat\", \"hook\": \"prerouting\", \"prio\": -100, \"policy\": \"accept\"}}, {\"chain\": {\"family\": \"ip\", \"table\": \"nat\", \"name\": \"OUTPUT\", \"handle\": 7, \"type\": \"nat\", \"hook\": \"output\", \"prio\": -100, \"policy\": \"accept\"}}, {\"rule\": {\"family\": \"ip\", \"table\": \"nat\", \"chain\": \"DOCKER\", \"handle\": 10, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"docker0\"}}, {\"counter\": {\"packets\": 0, \"bytes\": 0}}, {\"return\": null}]}}, {\"rule\": {\"family\": \"ip\", \"table\": \"nat\", \"chain\": \"POSTROUTING\", \"handle\": 9, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": {\"prefix\": {\"addr\": \"172.17.0.0\", \"len\": 16}}}}, {\"match\": {\"op\": \"!=\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"docker0\"}}, {\"counter\": {\"packets\": 0, \"bytes\": 0}}, {\"xt\": {\"type\": \"target\", \"name\": \"MASQUERADE\"}}]}}, {\"rule\": {\"family\": \"ip\", \"table\": \"nat\", \"chain\": \"PREROUTING\", \"handle\": 6, \"expr\": [{\"xt\": {\"type\": \"match\", \"name\": \"addrtype\"}}, {\"counter\": {\"packets\": 52, \"bytes\": 3471}}, {\"jump\": {\"target\": \"DOCKER\"}}]}}, {\"rule\": {\"family\": \"ip\", \"table\": \"nat\", \"chain\": \"OUTPUT\", \"handle\": 8, \"expr\": [{\"match\": {\"op\": \"!=\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": {\"prefix\": {\"addr\": \"127.0.0.0\", \"len\": 8}}}}, {\"xt\": {\"type\": \"match\", \"name\": \"addrtype\"}}, {\"counter\": {\"packets\": 4, \"bytes\": 240}}, {\"jump\": {\"target\": \"DOCKER\"}}]}}]}
+            ".to_string();
+
+        let parsed = serde_json::from_slice::<CommandResponse>(raw.as_bytes()).unwrap();
+        println!("Serialized Input JSON Parsed:\n{parsed:#?}");
+    }
 }
