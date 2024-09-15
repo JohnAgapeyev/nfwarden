@@ -36,10 +36,9 @@ pub struct ReferencePayload {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(untagged)]
 pub enum PayloadExpression {
-    #[serde(untagged)]
     Raw(RawPayload),
-    #[serde(untagged)]
     Reference(ReferencePayload),
 }
 
@@ -124,7 +123,8 @@ pub enum RtFamily {
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct RtExpression {
     pub key: RtKey,
-    pub family: RtFamily,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<RtFamily>,
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -145,7 +145,8 @@ pub enum CtDir {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct CtExpression {
     pub key: String,
-    pub family: CtFamily,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub family: Option<CtFamily>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dir: Option<CtDir>,
 }
@@ -287,7 +288,6 @@ pub struct OsfExpression {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Expression {
-    List(Vec<Box<Expression>>),
     Concat(Vec<Box<Expression>>),
     Set(Vec<Box<Expression>>),
     Map(MapExpression),
@@ -321,6 +321,8 @@ pub enum Expression {
     Number(i64),
     #[serde(untagged)]
     Boolean(bool),
+    #[serde(untagged)]
+    List(Vec<Box<Expression>>),
 }
 
 #[cfg(test)]
@@ -497,7 +499,7 @@ mod tests {
         fn rt_serialization() {
             let v = serde_json::to_string(&Expression::Rt(RtExpression {
                 key: RtKey::Mtu,
-                family: RtFamily::IPv4,
+                family: Some(RtFamily::IPv4),
             }))
             .unwrap();
             assert_eq!(v, "{\"rt\":{\"key\":\"mtu\",\"family\":\"ip\"}}");
@@ -510,7 +512,7 @@ mod tests {
         fn ct_serialization() {
             let v = serde_json::to_string(&Expression::Ct(CtExpression {
                 key: "test".to_string(),
-                family: CtFamily::IPv4,
+                family: Some(CtFamily::IPv4),
                 dir: Some(CtDir::Original),
             }))
             .unwrap();

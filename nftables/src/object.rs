@@ -461,5 +461,96 @@ mod tests {
 
             assert_eq!(v, parsed);
         }
+        #[test]
+        fn next_rule_serialize_deserialize() {
+            let raw = "
+    {
+      \"rule\": {
+        \"family\": \"ip\",
+        \"table\": \"libvirt_network\",
+        \"chain\": \"guest_input\",
+        \"handle\": 16,
+        \"expr\": [
+          {
+            \"match\": {
+              \"op\": \"==\",
+              \"left\": { \"meta\": { \"key\": \"oif\" } },
+              \"right\": \"virbr0\"
+            }
+          },
+          {
+            \"match\": {
+              \"op\": \"==\",
+              \"left\": { \"payload\": { \"protocol\": \"ip\", \"field\": \"daddr\" } },
+              \"right\": { \"prefix\": { \"addr\": \"192.168.122.0\", \"len\": 24 } }
+            }
+          },
+          {
+            \"match\": {
+              \"op\": \"in\",
+              \"left\": { \"ct\": { \"key\": \"state\" } },
+              \"right\": [\"established\", \"related\"]
+            }
+          },
+          { \"counter\": { \"packets\": 0, \"bytes\": 0 } },
+          { \"accept\": null }
+        ]
+      }
+    }
+            "
+            .to_string();
+
+            let v = Object::Rule(RuleElement {
+                family: Some("ip".to_string()),
+                table: Some("libvirt_network".to_string()),
+                chain: Some("guest_input".to_string()),
+                expr: Some(vec![
+                    Box::new(Statement::Match(MatchStatement {
+                        left: Box::new(Expression::Meta(MetaExpression { key: MetaKey::Oif })),
+                        right: Box::new(Expression::String("virbr0".to_string())),
+                        op: MatchOp::Equal,
+                    })),
+                    Box::new(Statement::Match(MatchStatement {
+                        left: Box::new(Expression::Payload(PayloadExpression::Reference(
+                            ReferencePayload {
+                                protocol: "ip".to_string(),
+                                field: "daddr".to_string(),
+                            },
+                        ))),
+                        right: Box::new(Expression::Prefix(PrefixExpression {
+                            addr: Box::new(Expression::String("192.168.122.0".to_string())),
+                            len: 24,
+                        })),
+                        op: MatchOp::Equal,
+                    })),
+                    Box::new(Statement::Match(MatchStatement {
+                        left: Box::new(Expression::Ct(CtExpression {
+                            key: "state".to_string(),
+                            family: None,
+                            dir: None,
+                        })),
+                        right: Box::new(Expression::List(vec![
+                            Box::new(Expression::String("established".to_string())),
+                            Box::new(Expression::String("related".to_string())),
+                        ])),
+                        op: MatchOp::In,
+                    })),
+                    Box::new(Statement::Counter(CounterStatement::Anonymous(
+                        AnonymousCounter {
+                            packets: Some(0),
+                            bytes: Some(0),
+                        },
+                    ))),
+                    Box::new(Statement::Verdict(VerdictStatement::Accept(None))),
+                ]),
+                handle: Some(16),
+                index: None,
+                comment: None,
+            });
+
+            let parsed = serde_json::from_slice::<Object>(raw.as_bytes()).unwrap();
+
+            assert_eq!(v, parsed);
+        }
     }
 }
