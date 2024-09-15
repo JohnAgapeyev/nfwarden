@@ -1,0 +1,427 @@
+{
+  "nftables": [
+    {
+      "metainfo": {
+        "version": "1.1.0",
+        "release_name": "Commodore Bullmoose",
+        "json_schema_version": 1
+      }
+    },
+    { "table": { "family": "ip", "name": "libvirt_network", "handle": 1 } },
+    {
+      "chain": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "name": "forward",
+        "handle": 1,
+        "type": "filter",
+        "hook": "forward",
+        "prio": 0,
+        "policy": "accept"
+      }
+    },
+    {
+      "chain": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "name": "guest_output",
+        "handle": 2
+      }
+    },
+    {
+      "chain": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "name": "guest_input",
+        "handle": 4
+      }
+    },
+    {
+      "chain": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "name": "guest_cross",
+        "handle": 6
+      }
+    },
+    {
+      "chain": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "name": "guest_nat",
+        "handle": 8,
+        "type": "nat",
+        "hook": "postrouting",
+        "prio": 100,
+        "policy": "accept"
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "forward",
+        "handle": 7,
+        "expr": [
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "jump": { "target": "guest_cross" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "forward",
+        "handle": 5,
+        "expr": [
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "jump": { "target": "guest_input" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "forward",
+        "handle": 3,
+        "expr": [
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "jump": { "target": "guest_output" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_output",
+        "handle": 24,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "iif" } },
+              "right": "virbr1"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "reject": { "type": "icmp", "expr": "port-unreachable" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_output",
+        "handle": 13,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "iif" } },
+              "right": "virbr0"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "accept": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_output",
+        "handle": 10,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "iif" } },
+              "right": "virbr0"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "reject": { "type": "icmp", "expr": "port-unreachable" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_input",
+        "handle": 25,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "oif" } },
+              "right": "virbr1"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "reject": { "type": "icmp", "expr": "port-unreachable" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_input",
+        "handle": 16,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "oif" } },
+              "right": "virbr0"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "in",
+              "left": { "ct": { "key": "state" } },
+              "right": ["established", "related"]
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "accept": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_input",
+        "handle": 11,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "oif" } },
+              "right": "virbr0"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "reject": { "type": "icmp", "expr": "port-unreachable" } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_cross",
+        "handle": 26,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "iif" } },
+              "right": "virbr1"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "oif" } },
+              "right": "virbr1"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "accept": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_cross",
+        "handle": 12,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "iif" } },
+              "right": "virbr0"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "oif" } },
+              "right": "virbr0"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "accept": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_nat",
+        "handle": 23,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": { "prefix": { "addr": "224.0.0.0", "len": 24 } }
+            }
+          },
+          { "counter": { "packets": 333, "bytes": 24276 } },
+          { "return": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_nat",
+        "handle": 22,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": "255.255.255.255"
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "return": null }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_nat",
+        "handle": 21,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "l4proto" } },
+              "right": "tcp"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "!=",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "masquerade": { "port": { "range": [1024, 65535] } } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_nat",
+        "handle": 20,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "meta": { "key": "l4proto" } },
+              "right": "udp"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "!=",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          { "counter": { "packets": 332, "bytes": 50796 } },
+          { "masquerade": { "port": { "range": [1024, 65535] } } }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "ip",
+        "table": "libvirt_network",
+        "chain": "guest_nat",
+        "handle": 19,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": { "payload": { "protocol": "ip", "field": "saddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          {
+            "match": {
+              "op": "!=",
+              "left": { "payload": { "protocol": "ip", "field": "daddr" } },
+              "right": { "prefix": { "addr": "192.168.122.0", "len": 24 } }
+            }
+          },
+          { "counter": { "packets": 0, "bytes": 0 } },
+          { "masquerade": null }
+        ]
+      }
+    }
+  ]
+}
