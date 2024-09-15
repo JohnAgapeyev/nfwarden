@@ -43,8 +43,8 @@ pub enum MatchOp {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct MatchStatement {
-    pub left: Expression,
-    pub right: Expression,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
     pub op: MatchOp,
 }
 
@@ -66,8 +66,8 @@ pub enum CounterStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct MangleStatement {
     //TODO: Do we need to limit things to "exthdr, payload, meta, ct, or ct helper" expression?
-    pub key: Expression,
-    pub value: Expression,
+    pub key: Box<Expression>,
+    pub value: Box<Expression>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -118,13 +118,15 @@ pub enum LimitStatement {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum FwdFamily {
-    Ip,
-    Ip6,
+    #[serde(rename = "ip")]
+    IPv4,
+    #[serde(rename = "ip6")]
+    IPv6,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct FwdStatement {
-    pub dev: Expression,
+    pub dev: Box<Expression>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub family: Option<FwdFamily>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -134,9 +136,9 @@ pub struct FwdStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DupStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub addr: Option<Expression>,
+    pub addr: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub dev: Option<Expression>,
+    pub dev: Option<Box<Expression>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -151,11 +153,11 @@ pub enum NatFlag {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct SnatStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub addr: Option<Expression>,
+    pub addr: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub family: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub port: Option<Expression>,
+    pub port: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<NatFlag>>,
 }
@@ -163,11 +165,11 @@ pub struct SnatStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct DnatStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub addr: Option<Expression>,
+    pub addr: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub family: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub port: Option<Expression>,
+    pub port: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<NatFlag>>,
 }
@@ -175,7 +177,7 @@ pub struct DnatStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct MasqueradeStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub port: Option<Expression>,
+    pub port: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<NatFlag>>,
 }
@@ -183,7 +185,7 @@ pub struct MasqueradeStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct RedirectStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub port: Option<Expression>,
+    pub port: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<NatFlag>>,
 }
@@ -228,7 +230,7 @@ pub struct SetStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub op: Option<SetOp>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub elem: Option<Expression>,
+    pub elem: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub set: Option<String>,
 }
@@ -283,7 +285,7 @@ pub struct MeterStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub key: Option<Expression>,
+    pub key: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stmt: Option<Box<Statement>>,
 }
@@ -298,7 +300,7 @@ pub enum QueueFlag {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct QueueStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub num: Option<Expression>,
+    pub num: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flags: Option<Vec<QueueFlag>>,
 }
@@ -306,9 +308,9 @@ pub struct QueueStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct VerdictMapStatement {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub key: Option<Expression>,
+    pub key: Option<Box<Expression>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<Expression>,
+    pub data: Option<Box<Expression>>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -352,7 +354,7 @@ pub enum Statement {
     Set(SetStatement),
     Log(LogStatement),
     #[serde(rename = "ct helper")]
-    CtHelper(Expression),
+    CtHelper(Box<Expression>),
     Meter(MeterStatement),
     Queue(QueueStatement),
     #[serde(rename = "vmap")]
@@ -360,9 +362,9 @@ pub enum Statement {
     #[serde(rename = "ct count")]
     CtCount(CtCountStatement),
     #[serde(rename = "ct timeout")]
-    CtTimeout(Expression),
+    CtTimeout(Box<Expression>),
     #[serde(rename = "ct expectation")]
-    CtExpectation(Expression),
+    CtExpectation(Box<Expression>),
     Xt(XtStatement),
     #[serde(untagged)]
     Verdict(VerdictStatement),
@@ -547,6 +549,51 @@ mod tests {
         fn named_limit_statement_serialization() {
             let v = serde_json::to_string(&LimitStatement::Named("mylimit".to_string())).unwrap();
             assert_eq!(v, "{\"limit\":\"mylimit\"}");
+        }
+    }
+    mod fwd {
+        use super::*;
+
+        #[test]
+        fn fwd_statement_serialization() {
+            let v = serde_json::to_string(&Statement::Fwd(FwdStatement {
+                dev: Box::new(Expression::String("lo".to_string())),
+                family: Some(FwdFamily::IPv4),
+                addr: Some("127.0.0.1".to_string()),
+            }))
+            .unwrap();
+            assert_eq!(
+                v,
+                "{\"fwd\":{\"dev\":\"lo\",\"family\":\"ip\",\"addr\":\"127.0.0.1\"}}"
+            );
+        }
+        #[test]
+        fn fwd_statement_deserialization() {
+            let target = Statement::Fwd(FwdStatement {
+                dev: Box::new(Expression::String("lo".to_string())),
+                family: Some(FwdFamily::IPv4),
+                addr: Some("127.0.0.1".to_string()),
+            });
+            let raw =
+                "{\"fwd\":{\"dev\":\"lo\",\"family\":\"ip\",\"addr\":\"127.0.0.1\"}}".to_string();
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(parsed, target);
+        }
+    }
+    mod notrack {
+        use super::*;
+
+        #[test]
+        fn notrack_statement_serialization() {
+            let v = serde_json::to_string(&Statement::Notrack(None)).unwrap();
+            assert_eq!(v, "{\"notrack\":null}");
+        }
+        #[test]
+        fn notrack_statement_deserialization() {
+            let target = Statement::Notrack(None);
+            let raw = "{\"notrack\":null}".to_string();
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(parsed, target);
         }
     }
 }
