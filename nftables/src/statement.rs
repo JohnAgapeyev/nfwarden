@@ -193,10 +193,10 @@ pub struct RedirectStatement {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum NatStatement {
-    Snat(SnatStatement),
-    Dnat(DnatStatement),
-    Masquerade(MasqueradeStatement),
-    Redirect(RedirectStatement),
+    Snat(Option<SnatStatement>),
+    Dnat(Option<DnatStatement>),
+    Masquerade(Option<MasqueradeStatement>),
+    Redirect(Option<RedirectStatement>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -349,7 +349,6 @@ pub enum Statement {
     Fwd(FwdStatement),
     Notrack(Option<bool>),
     Dup(DupStatement),
-    Nat(NatStatement),
     Reject(RejectStatement),
     Set(SetStatement),
     Log(LogStatement),
@@ -367,6 +366,8 @@ pub enum Statement {
     CtExpectation(Box<Expression>),
     Xt(XtStatement),
     #[serde(untagged)]
+    Nat(NatStatement),
+    #[serde(untagged)]
     Verdict(VerdictStatement),
 }
 
@@ -374,6 +375,58 @@ pub enum Statement {
 mod tests {
     use super::*;
 
+    mod nat {
+        use super::*;
+
+        #[test]
+        fn snat_serialization() {
+            let v = serde_json::to_string(&Statement::Nat(NatStatement::Snat(None))).unwrap();
+            assert_eq!(v, "{\"snat\":null}");
+        }
+        #[test]
+        fn snat_deserialization() {
+            let raw = "{\"snat\":null}";
+            let target = Statement::Nat(NatStatement::Snat(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
+        fn dnat_serialization() {
+            let v = serde_json::to_string(&Statement::Nat(NatStatement::Dnat(None))).unwrap();
+            assert_eq!(v, "{\"dnat\":null}");
+        }
+        #[test]
+        fn dnat_deserialization() {
+            let raw = "{\"dnat\":null}";
+            let target = Statement::Nat(NatStatement::Dnat(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
+        fn masquerade_serialization() {
+            let v = serde_json::to_string(&Statement::Nat(NatStatement::Masquerade(None))).unwrap();
+            assert_eq!(v, "{\"masquerade\":null}");
+        }
+        #[test]
+        fn masquerade_deserialization() {
+            let raw = "{\"masquerade\":null}";
+            let target = Statement::Nat(NatStatement::Masquerade(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+        #[test]
+        fn redirect_serialization() {
+            let v = serde_json::to_string(&Statement::Nat(NatStatement::Redirect(None))).unwrap();
+            assert_eq!(v, "{\"redirect\":null}");
+        }
+        #[test]
+        fn redirect_deserialization() {
+            let raw = "{\"redirect\":null}";
+            let target = Statement::Nat(NatStatement::Redirect(None));
+            let parsed = serde_json::from_slice::<Statement>(raw.as_bytes()).unwrap();
+            assert_eq!(target, parsed);
+        }
+    }
     mod verdict {
         use super::*;
 
