@@ -40,13 +40,14 @@ fn App() -> impl IntoView {
             dir="ltr"
             attr:data-theme="dark"
         />
+        <Stylesheet href="tailwind_output.css"/>
         <Title text="My super awesome test title for my website"/>
         <Meta charset="utf-8"/>
         <Meta name="description" content="Hidden internal description"/>
         <MyCustomHeader />
         <main>
             <aside>
-                <p>"This is my text"</p>
+                <p class="p-6 text-4xl">"This is my text"</p>
             </aside>
             <button
                 on:click=move |_| {
