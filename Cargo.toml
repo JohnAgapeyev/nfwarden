@@ -1,11 +1,34 @@
 [workspace]
-members = [
-    "frontend",
-    "backend",
-    "nftables-sys",
-    "nftables",
-]
+members = ["backend", "frontend", "nftables", "nftables-sys"]
 resolver = "2"
+
+[workspace.metadata.leptos]
+lib-profile-release = "wasm-release"
+[workspace.metadata.leptos_meta]
+lib-profile-release = "wasm-release"
+
+[workspace.dependencies]
+axum = { version = "0.7.5", features = ["http2", "macros", "multipart", "ws"] }
+bindgen = "0.69.4"
+console_error_panic_hook = "0.1.7"
+dotenvy = "0.15.7"
+gloo = { version = "0.11.0", features = ["default"] }
+leptos = { version = "0.6.12", features = ["csr"] }
+leptos_meta = { version = "0.6.12", features = ["csr"] }
+nftables = { path = "./nftables" }
+nftables-sys = { path = "./nftables-sys" }
+pkg-config = "0.3.30"
+rusqlite = "0.31.0"
+rustls = "0.23.10"
+serde = { version = "1.0.203", features = ["std", "alloc", "derive"] }
+serde_json = "1.0.119"
+tokio = { version = "1.38.0", features = ["full"] }
+tokio-util = { version = "0.7.11", features = ["full"] }
+tower = { version = "0.4.13", features = ["full"] }
+tower-http = { version = "0.5.2", features = ["full"] }
+tracing = { version = "0.1.40", features = ["default", "max_level_debug", "release_max_level_off"] }
+tracing-subscriber = "0.3.18"
+zstd = { version = "0.13.1", features = ["zstdmt"] }
 
 [profile.release]
 strip = true
@@ -17,31 +40,3 @@ inherits = "release"
 opt-level = 'z'
 lto = true
 codegen-units = 1
-
-[workspace.metadata.leptos]
-lib-profile-release = "wasm-release"
-[workspace.metadata.leptos_meta]
-lib-profile-release = "wasm-release"
-
-[workspace.dependencies]
-nftables-sys = {path = "./nftables-sys" }
-nftables = {path = "./nftables" }
-console_error_panic_hook = "0.1.7"
-axum = {version = "0.7.5", features = ["http2", "macros", "multipart", "ws"]}
-leptos = { version = "0.6.12", features = ["csr"] }
-leptos_meta = { version = "0.6.12", features = ["csr"] }
-rusqlite = "0.31.0"
-rustls = "0.23.10"
-serde = { version = "1.0.203", features = ["std", "alloc", "derive"]}
-serde_json = "1.0.119"
-tokio = { version = "1.38.0", features = ["full"]}
-tokio-util = { version = "0.7.11", features = ["full"]}
-tracing = { version = "0.1.40", features = ["default", "max_level_debug", "release_max_level_off"]}
-tracing-subscriber = "0.3.18"
-dotenvy = "0.15.7"
-zstd = { version = "0.13.1", features = ["zstdmt"] }
-bindgen = "0.69.4"
-tower = { version = "0.4.13", features = ["full"] }
-tower-http = { version = "0.5.2", features = ["full"] }
-pkg-config = "0.3.30"
-gloo = { version = "0.11.0", features = ["default"] }
