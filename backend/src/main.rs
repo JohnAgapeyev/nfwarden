@@ -1,5 +1,7 @@
 use axum::{response::IntoResponse, response::Json, response::Result, routing::get, Router};
+use clap::{Parser, Subcommand};
 use serde_json::{json, Value};
+use std::path::PathBuf;
 use tokio;
 use tower_http::services::{ServeDir, ServeFile};
 
@@ -44,9 +46,8 @@ fn get_api_router() -> Router {
     Router::new().nest("/v1", get_api_v1_router())
 }
 
-async fn run_server() {
-    let serve_dir = ServeDir::new("dist");
-    let serve_file = ServeFile::new("dist/index.html");
+async fn run_server(serve_root: &PathBuf) {
+    let serve_dir = ServeDir::new(serve_root);
 
     let app = Router::new()
         .nest("/api", get_api_router())
@@ -58,8 +59,21 @@ async fn run_server() {
     axum::serve(listener, app).await.unwrap();
 }
 
+#[derive(Parser)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    #[arg(short, long, value_name = "FILE")]
+    root: PathBuf,
+
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    debug: u8,
+}
+
 #[tokio::main]
 async fn main() {
+    let cli = Cli::parse();
+
     tracing_subscriber::fmt::init();
-    run_server().await;
+
+    run_server(&cli.root).await;
 }

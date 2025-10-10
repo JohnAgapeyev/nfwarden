@@ -9,6 +9,7 @@ features = ["libnftables"]
 
 [dependencies]
 axum.workspace = true
+clap.workspace = true
 rusqlite.workspace = true
 rustls.workspace = true
 serde.workspace = true
