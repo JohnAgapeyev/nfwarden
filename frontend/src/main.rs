@@ -9,12 +9,13 @@ async fn fetch_tables(_value: i32) -> String {
     let resp = Request::get("/api/v1/get_tables").send().await.unwrap();
     assert_eq!(resp.status(), 200);
 
-    resp.text().await.unwrap()
+    //resp.text().await.unwrap()
 
     //match resp.json::<Result<NftOutput, String>>().await {
-    //    Ok(parsed) => "MYTEST".to_string(),
-    //    Err(err_msg) => err_msg.to_string(),
-    //}
+    match resp.text().await {
+        Ok(parsed) => "MYTEST".to_string(),
+        Err(err_msg) => err_msg.to_string(),
+    }
 }
 
 #[component]
@@ -40,7 +41,7 @@ fn App() -> impl IntoView {
             dir="ltr"
             attr:data-theme="dark"
         />
-        <Stylesheet href="tailwind_output.css"/>
+        //<Stylesheet href="tailwind_output.css"/>
         <Title text="My super awesome test title for my website"/>
         <Meta charset="utf-8"/>
         <Meta name="description" content="Hidden internal description"/>
@@ -49,15 +50,17 @@ fn App() -> impl IntoView {
             <aside>
                 <p class="p-6 text-4xl">"This is my text"</p>
             </aside>
-            <button
-                on:click=move |_| {
-                    set_count.update(|n| *n += 1);
-                    once.refetch();
-                }
-            >
-                "Click me: " {move || count.get()}
-            </button>
-            <p>"TESTING: " {move || once.get()}</p>
+            <div class="bg-gradient-to-tl from-blue-800 to-blue-100 text-yellow-300 font-mono flex flex-col min-h-screen">
+                <button
+                    on:click=move |_| {
+                        set_count.update(|n| *n += 1);
+                        once.refetch();
+                    }
+                >
+                    "Click me: " {move || count.get()}
+                </button>
+                <p>"TESTING: " {move || once.get()}</p>
+            </div>
         </main>
     }
 }
